@@ -1,0 +1,9 @@
+TOKEN=your_token
+CITIES="Test city,Test city2"
+DISTRICTS="Test district"
+PRODUCTS="Test,Test1"
+COUNT="7"
+GET_PRODUCT="Test type"
+PRICE="1/10"
+OPERATORS_CHAT=id_your_operators_chat
+NUM_ORDER=1
