@@ -10,7 +10,7 @@ bot = telebot.TeleBot(os.getenv('TOKEN', 'your token'))
 
 
 def order_step(message):
-    if message.text == 'Вернуться':
+    if message.text == 'В начало':
         start_menu(message)
         return
     id_order = os.getenv('NUM_ORDER')
@@ -23,7 +23,7 @@ def order_step(message):
 
 
 def city_step(message, order_data):
-    if message.text == 'Вернуться':
+    if message.text == 'В начало':
         start_menu(message)
         return
     order_data['city'] = message.text
@@ -34,7 +34,7 @@ def city_step(message, order_data):
 
 
 def district_step(message, order_data):
-    if message.text == 'Вернуться':
+    if message.text == 'В начало':
         start_menu(message)
         return
     order_data['district'] = message.text
@@ -45,7 +45,7 @@ def district_step(message, order_data):
 
 
 def product_step(message, order_data):
-    if message.text == 'Вернуться':
+    if message.text == 'В начало':
         start_menu(message)
         return
     order_data['product'] = message.text
@@ -58,7 +58,7 @@ def product_step(message, order_data):
 
 
 def count_step(message, order_data):
-    if message.text == 'Вернуться':
+    if message.text == 'В начало':
         start_menu(message)
         return
     order_data['count'] = message.text
@@ -71,7 +71,7 @@ def count_step(message, order_data):
 
 
 def operator_step(message, order_data):
-    if message.text == 'Вернуться':
+    if message.text == 'В начало':
         start_menu(message)
         return
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -103,7 +103,7 @@ Id заказа - {order_data['id']}
 
 
 def construction_keyboard_product(keyboard, env_name):
-    key_back = types.InlineKeyboardButton(text='Вернуться', callback_data='start')
+    key_back = types.InlineKeyboardButton(text='В начало', callback_data='start')
     keyboard.add(key_back)
     if env_name != '':
         for i in os.getenv(env_name, 'default').split(','):
@@ -117,10 +117,22 @@ def send_image(message, name_img):
     photo.close()
 
 
-def start_menu(message):
+def help_menu(message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    key_back = types.InlineKeyboardButton(text='Помощь', callback_data='')
-    keyboard.add(key_back)
+    construction_keyboard_product(keyboard, '')
+    bot.send_message(message.from_user.id, text=f'''
+Возможные пути связи
+Ответы на общие вопросы
+''', reply_markup=keyboard)
+
+
+
+def start_menu(message):
+    # bot.send_message(message.chat.id, f'Chat id = {message.chat.id}')
+    # send_image(message, name_img='name')
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    key_help = types.InlineKeyboardButton(text='Помощь', callback_data='')
+    keyboard.add(key_help)
     key_back = types.InlineKeyboardButton(text='Сделать заказ', callback_data='start_order')
     keyboard.add(key_back)
     bot.send_message(message.from_user.id,
@@ -129,7 +141,7 @@ def start_menu(message):
 
 @bot.message_handler(content_types=['text'])
 def callback_inline(call):
-    if call.text == 'Вернуться' or call.text == '/start':
+    if call.text == 'В начало' or call.text == '/start':
         start_menu(call)
     elif call.text == 'Сделать заказ':
         id_order = os.getenv('NUM_ORDER')
@@ -139,24 +151,8 @@ def callback_inline(call):
         construction_keyboard_product(keyboard, env_name='CITIES')
         bot.send_message(call.from_user.id, text='Выберите город:', reply_markup=keyboard)
         bot.register_next_step_handler(call, city_step, order_data=order_data)
-
-
-@bot.message_handler(commands=['help'])
-def help_com(message):
-    bot.send_message(message.from_user.id, 'Помощь')
-
-
-@bot.message_handler(commands=['start'])
-def start(message):
-    # bot.send_message(message.chat.id, f'Chat id = {message.chat.id}')
-    # send_image(message, name_img='name')
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    key_back = types.InlineKeyboardButton(text='Помощь', callback_data='help')
-    keyboard.add(key_back)
-    key_back = types.InlineKeyboardButton(text='Сделать заказ', callback_data='start_order')
-    keyboard.add(key_back)
-    bot.send_message(message.from_user.id,
-                     f'''Привет, я бот''', reply_markup=keyboard)
+    elif call.text == 'Помощь':
+        help_menu(call)
 
 
 bot.polling(none_stop=True, interval=0)
