@@ -126,9 +126,7 @@ def help_menu(message):
 ''', reply_markup=keyboard)
 
 
-
 def start_menu(message):
-    # bot.send_message(message.chat.id, f'Chat id = {message.chat.id}')
     # send_image(message, name_img='name')
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     key_help = types.InlineKeyboardButton(text='Помощь', callback_data='')
@@ -153,6 +151,8 @@ def callback_inline(call):
         bot.register_next_step_handler(call, city_step, order_data=order_data)
     elif call.text == 'Помощь':
         help_menu(call)
+    elif call.text == '/ID':
+        bot.send_message(call.chat.id, f'Chat id = {call.chat.id}')
 
 
 bot.polling(none_stop=True, interval=0)
