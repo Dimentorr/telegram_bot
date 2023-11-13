@@ -1,10 +1,12 @@
 TOKEN=your_token
-CITIES="Test city,Test city2"
-DISTRICTS="Test district"
-PRODUCTS="Test,Test1"
-COUNT="7"
-GET_PRODUCT="Test type"
-PRICE="1/10"
-OPERATORS_CHAT=id_your_operators_chat
-NUM_ORDER=1
+CITIES='test'
+DISTRICTS='test'
+PRODUCTS='Test,Test1'
+COUNT='1'
+GET_PRODUCT='Test type'
+PRICE='2000'
+CURRENCY='CURRENCY1/CURRENCY2'
+OPERATORS_CHAT=ID_CHAT
+PASSWORD='Test'
 
+default='tests'
