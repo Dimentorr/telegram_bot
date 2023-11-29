@@ -1,0 +1,18 @@
+{
+   "TOKEN": "YorToken",
+   "CITIES": "City1",
+   "DISTRICTS": "District1",
+   "PRODUCTS": {
+      "City1": "Product1,Product4,Product2"
+   },
+   "COUNT": "1",
+   "GET_PRODUCT": "Test type",
+   "PRICE": {
+      "Product1": "100",
+      "Product2": "200"
+   },
+   "CURRENCY": "CURRENCY1/CURRENCY2",
+   "OPERATORS_CHAT": "ID_CHAT",
+   "PASSWORD": "Test",
+   "default": "tests"
+}
