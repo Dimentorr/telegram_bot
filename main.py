@@ -5,25 +5,15 @@ import telebot
 from telebot import types
 import requests
 
+import asyncio
+
 import random
-
-
-#
-# def update_env(key, new_value):
-#     os.environ[f'{key}'] = f'{new_value}'
-#
-#     dotenv.set_key(dotenv_file, f'{key}', os.environ[f'{key}'])
 
 
 def json_load(name: str):
     with open(f'{name}', 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data
-
-
-# def save_json(data: dict, name: str):
-#     with open(f'{name}', 'w', encoding='utf-8') as file:
-#         json.dump(data, file, indent=3)
 
 
 def update_json(data: dict, new_value: str, key: str, second_key='', name='data.json'):
@@ -38,28 +28,19 @@ def update_json(data: dict, new_value: str, key: str, second_key='', name='data.
 json_data = json_load('data.json')
 
 bot = telebot.TeleBot(json_data['TOKEN'])
-# print(data)
-# data['PRODUCTS']['Владивосток'] = "Test123,Test321"
-# json_data = json.dumps(data)
-
-# pathlib.Path('./data.json').write_text(json_data, encoding='utf-8')
-
-# test_data = json.loads(os.getenv('PRODUCTS'))
-# print(test_data)
-# test_data["Уфа"] = f"Product1,Product2"
-# print(str(test_data))
-# test_update = json.dumps(rf'{test_data}', indent=4)
-#
-# update_env('PRODUCTS', test_data)
-# test_data1 = json.loads(os.getenv('PRODUCTS'))
-# print(test_data1)
 
 
 #
 def binance_rub(rub):
     binanceTick1 = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCRUB")
     rub_in_btc = binanceTick1.json()['price']
-    return (rub * 100) / round(float(rub_in_btc), 8)
+    return rub / round(float(rub_in_btc), 8)
+
+
+def binance_usdt(rub):
+    binanceTick1 = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=USDTRUB")
+    rub_in_usdt = binanceTick1.json()['price']
+    return rub / round(float(rub_in_usdt), 8)
 
 
 #
@@ -69,7 +50,6 @@ def order_step(message):
         return
     id_order = json_data['NUM_ORDER']
     order_data = {'id': id_order}
-    # os.environ['NUM_ORDER'] = str(int(id_order) + 1)
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     construction_keyboard_product(keyboard, env_name='CITIES', order_data=order_data)
     bot.send_message(message.from_user.id, text='Выберите город:', reply_markup=keyboard)
@@ -94,18 +74,13 @@ def district_step(message, order_data):
         start_menu(message)
         return
     order_data['district'] = message.text
-    print(4)
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    print(3)
     construction_keyboard_product(keyboard, env_name='PRODUCTS', order_data=order_data)
-    print(2)
     bot.send_message(message.from_user.id, text='Выберите товар:', reply_markup=keyboard)
-    print(1)
     bot.register_next_step_handler(message, product_step, order_data=order_data)
 
 
 def product_step(message, order_data):
-    print('!Tyt!')
     if message.text == 'В начало':
         start_menu(message)
         return
@@ -151,8 +126,7 @@ Id заказа - {order_data['id']}
 Район - {order_data['district']}
 Заказ - {order_data['count']} {order_data['product']}
 Способ получение - {order_data['get']}
-Стоимость - {float(price) * float(order_data['count'])} {currency[0]}/{binance_rub(float(price)) * float(order_data['count'])} {currency[1]}
-Ожидайте ответа оператора
+Стоимость - {float(price) * float(order_data['count'])} {currency[0]}/{binance_usdt(float(price)) * float(order_data['count'])} {currency[1]}
             ''',
         reply_markup=keyboard
     )
@@ -162,13 +136,21 @@ Id заказа - {order_data['id']}
 Район - {order_data['district']}
 Заказ - {order_data['count']} {order_data['product']}
 Способ получение - {order_data['get']}
-Стоимость - {float(price) * float(order_data['count'])} {currency[0]}/{binance_rub(float(price)) * float(order_data['count'])} {currency[1]}
+Стоимость - {float(price) * float(order_data['count'])} {currency[0]}/{binance_usdt(float(price)) * float(order_data['count'])} {currency[1]}
 Логин пользователя - @{message.from_user.username}
             ''')
+    try:
+        Pay(message, order_data)
+    except Exception as e:
+        bot.send_message(
+            message.from_user.id,
+            text=f'''Произошла ошибка, попробуте повторить ошибку позже''')
+        bot.send_message(json_data['OPERATORS_CHAT'], f'''Произошла ошибка {e} с заказом {order_data['id']}
+Пользователь: @{message.from_user.username}''')
 
 
 #
-def construction_keyboard_product(keyboard, env_name, order_data=''):
+def construction_keyboard_product(keyboard, env_name, order_data=dict):
     key_back = types.InlineKeyboardButton(text='В начало', callback_data='start')
     keyboard.add(key_back)
     if env_name != '':
@@ -180,8 +162,6 @@ def construction_keyboard_product(keyboard, env_name, order_data=''):
             # print(order_data)
             # возможная причина возникновения этого исключения пока что только 1
             # если появится больше словарей внутри json ужно будет переписать
-            print(env_name)
-            # print(json_data[env_name][order_data['city']])
             for i in json_data[env_name][order_data['city']].split(','):
                 key = types.KeyboardButton(text=f'{i}')
                 keyboard.add(key)
@@ -304,7 +284,6 @@ def invisible_update_step(message, data_name):
     else:
         new_data = message.text
         print(new_data)
-    # update_env(data_name, message.text)
     update_json(data=json_data, new_value=new_data, key=data_name)
     bot.register_next_step_handler(message, admin_menu)
 
@@ -317,7 +296,6 @@ def update_step(message, data_name):
     elif message.text == 'Назад к выбору':
         admin_menu(message, password=True)
         return
-    print(message.text)
     bot.send_message(message.from_user.id, f'''Введите новое значение
 <-------------------------->''')
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -357,6 +335,86 @@ def intermediate_pass_stape(message):
         bot.register_next_step_handler(message, update_step, data_name='COUNT')
 
 
+coinpayments_url = 'https://www.coinpayments.net/api.php'
+merchant_id = json_data['SHOPID'] # Ваш merchant ID в CoinPayments
+private_key = json_data['SECRETKEY_COINPAYMENTS'] # Ваш private key в CoinPayments
+server = json_data['SERVER']
+
+
+async def CheckPay(invoice_id, message, order_data):
+    url = 'https://api.cryptocloud.plus/v1/invoice/info'
+    api_key = json_data['APIKEY_COINPAYMENTS']
+
+    headers = {'Authorization': f'Token {api_key}'}
+    params = {'uuid': f'INV-{invoice_id}'}
+    while True:
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params
+        )
+        invoice = response.json()
+        if invoice.get('status_invoice') == 'paid':
+            bot.send_message(json_data['OPERATORS_CHAT'], f'''
+Заказ: {order_data['id']}
+Логин пользователя - @{message.from_user.username}
+INV-{invoice_id}
+Статус - Оплачен''')
+            bot.send_message(message.from_user.id, text=f'''Счёт: INV-{invoice_id} был оплачен!
+Ожидайте пока оператор с вами свяжется''')
+            break
+        elif invoice.get('status_invoice') != 'paid' and invoice.get('status_invoice') != 'created':
+            bot.send_message(json_data['OPERATORS_CHAT'], f'''
+            Заказ: {order_data['id']}
+            Логин пользователя - @{message.from_user.username}
+            INV-{invoice_id}
+            Статус - Отменён''')
+
+            bot.send_message(message.from_user.id, text=f'''Счёт: INV-{invoice_id} был отменён!''')
+            break
+
+
+async def PayWithAPICryptoCloud(message, order_data):
+    api_key = json_data['APIKEY_COINPAYMENTS']
+    rub = float(json_data['PRICE'][order_data['product']])
+    price = binance_usdt(rub)
+    count = float(order_data['count'])
+
+    headers = {
+        "Authorization": f"Token {api_key}"
+    }
+
+    payload = {
+        "shop_id": json_data['SHOPID'],
+        'amount': price * count,
+        'currency1': json_data['CURRENCY'].split('/')[1],
+        'currency2': json_data['CURRENCY'].split('/')[1],
+        'item_name': order_data['product'],
+    }
+
+    response = requests.post(
+        "https://api.cryptocloud.plus/v1/invoice/create",
+        headers=headers,
+        data=payload
+    )
+
+    invoice_info = response.json()
+    bot.send_message(message.from_user.id,
+                     text=f'''Ссылка на оплату : {invoice_info.get('pay_url', None)}
+Id заказа: INV-{invoice_info.get('invoice_id', None)}''')
+    bot.send_message(json_data['OPERATORS_CHAT'], f'''
+Заказ: {order_data['id']}
+Логин пользователя - @{message.from_user.username}
+INV-{invoice_info.get('invoice_id', None)}
+Статус - В ожидании оплаты''')
+    await CheckPay(invoice_info.get('invoice_id', None), message, order_data)
+
+
+def Pay(message, order_data):
+    asyncio.run(PayWithAPICryptoCloud(message, order_data))
+    print('ok')
+
+
 #
 @bot.message_handler(content_types=['text'])
 def callback_inline(call):
@@ -365,7 +423,6 @@ def callback_inline(call):
     elif call.text == 'Сделать заказ':
         id_order = random.randint(100000, 1000000)
         order_data = {'id': id_order}
-        # os.environ['NUM_ORDER'] = str(int(id_order) + 1)
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         construction_keyboard_product(keyboard, env_name='CITIES', order_data=order_data)
         bot.send_message(call.from_user.id, text='Выберите город:', reply_markup=keyboard)
