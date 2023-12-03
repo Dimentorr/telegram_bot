@@ -1,5 +1,6 @@
 import os
 import json
+import time
 
 import telebot
 from telebot import types
@@ -348,6 +349,11 @@ async def CheckPay(invoice_id, message, order_data):
     headers = {'Authorization': f'Token {api_key}'}
     params = {'uuid': f'INV-{invoice_id}'}
     while True:
+        # ожидание между запросами к платёжной системе за ответом,
+        # при необходимости сделать больше или меньше
+        # wait_time - количество секунд между запросами
+        wait_time = 15
+        time.sleep(wait_time)
         response = requests.get(
             url,
             headers=headers,
