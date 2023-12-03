@@ -1,18 +1,29 @@
 {
-   "TOKEN": "YorToken",
-   "CITIES": "City1",
-   "DISTRICTS": "District1",
+   "TOKEN": "YOUR_TOKEN_FROM_TELEGRAM_BOT",
+   "CITIES": "City1, City2",
+   "DISTRICTS": {
+     "City1": "District1, District2",
+     "City2": "District3, District4"
+   },
    "PRODUCTS": {
-      "City1": "Product1,Product4,Product2"
+      "City1": "Product1,Product4,Product2",
+      "City2": "Product2,Product3"
    },
    "COUNT": "1",
    "GET_PRODUCT": "Test type",
    "PRICE": {
       "Product1": "100",
-      "Product2": "200"
+      "Product2": "200",
+      "Product3": "300",
+      "Product4": "400"
    },
-   "CURRENCY": "CURRENCY1/CURRENCY2",
-   "OPERATORS_CHAT": "ID_CHAT",
+   "CURRENCY": "RUB/USDT",
+   "OPERATORS_CHAT": "ID_OPERTORS_CHAT",
    "PASSWORD": "Test",
-   "default": "tests"
+   "default": "tests",
+   "APIKEY_COINPAYMENTS": "YOUR_API_KEY",
+   "SECRETKEY_COINPAYMENTS": "YOUR_SECRETKEY",
+   "SHOPID": "YOUR_SHOPID",
+   "SERVER": "URL_FROM_YOUR_TELEGRAM_BOT"
 }
+
