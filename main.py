@@ -145,7 +145,7 @@ Id заказа - {order_data['id']}
     except Exception as e:
         bot.send_message(
             message.from_user.id,
-            text=f'''Произошла ошибка, попробуте повторить ошибку позже''')
+            text=f'''Произошла ошибка, попробуте повторить попытку позже''')
         bot.send_message(json_data['OPERATORS_CHAT'], f'''Произошла ошибка {e} с заказом {order_data['id']}
 Пользователь: @{message.from_user.username}''')
 
