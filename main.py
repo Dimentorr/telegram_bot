@@ -32,7 +32,7 @@ bot = telebot.TeleBot(json_data['TOKEN'])
 
 
 #
-def binance_rub(rub):
+def binance_btc(rub):
     binanceTick1 = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCRUB")
     rub_in_btc = binanceTick1.json()['price']
     return rub / round(float(rub_in_btc), 8)
@@ -253,7 +253,6 @@ def password_before_admin_menu(message):
 
 #
 def admin_menu(message, password=False):
-    print(1)
     if message.text == 'В начало':
         start_menu(message)
         return
@@ -418,7 +417,6 @@ INV-{invoice_info.get('invoice_id', None)}
 
 def Pay(message, order_data):
     asyncio.run(PayWithAPICryptoCloud(message, order_data))
-    print('ok')
 
 
 #
@@ -439,6 +437,9 @@ def callback_inline(call):
         bot.send_message(call.chat.id, f'Chat id = {call.chat.id}')
     elif call.text == '/admin':
         password_before_admin_menu(call)
+    else:
+        bot.send_message(call.from_user.id, text='Я не знаю данной команды')
+        start_menu(call)
 
 
 bot.polling(none_stop=True, interval=0)
